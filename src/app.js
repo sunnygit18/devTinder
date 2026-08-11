@@ -9,7 +9,7 @@ app.use(express.json());//this middleware parse json data to server
 
 
 app.post("/signup", async(req,res)=>{
-    console.log("ROUTE HIT");
+try{console.log("ROUTE HIT");
     console.log(req.body);
 
 
@@ -18,8 +18,40 @@ app.post("/signup", async(req,res)=>{
     //Creating a new instance of the User model
     const user = new User(req.body);
     await user.save();
-    res.send("User Added succesfully");
+        res.send("User Added succesfully");}
+        catch(err){
+            res.status(400).json({
+                error:err.message
+            });
+        }
 });
+
+//patch api UPDATE THE DATA OF THE USER
+app.patch("/user/:userId",async (req,res)=>{
+    const userId = req.params?.userId;
+    const data = req.body;
+    try{
+        const ALLOWED_UPDATES = ["photoUrl","about","gender","age","skills"];
+        const isUpdateAllowed = Object.keys(data).every((k)=>
+        ALLOWED_UPDATES.includes(k));
+        if(!isUpdateAllowed){
+            throw new Error("Update not allowed");
+        }
+
+
+        const user = await User.findByIdAndUpdate({ _id:userId },data ,{
+            returnDocument: "after",
+            runValidators:true,
+        });
+        console.log(user);
+        res.send("USER UPDATED SUCCESSFULLY");
+
+    }
+    catch(err){
+        res.status(400).send("UPDATE FAIULED"+ err.message);
+    }
+});
+
 
 // Get user by email
 app.get("/user",async(req,res) => {
