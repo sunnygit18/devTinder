@@ -3,20 +3,36 @@ const express = require("express");
 const connectDB = require("./config/database2");
 const app = express();
 const User = require("./models/user");
+const {validateSignupdata} = require("./utils/validation");
+const bcrypt = require("bcrypt");
+
 
 app.use(express.json());//this middleware parse json data to server
 
 
 
 app.post("/signup", async(req,res)=>{
-try{console.log("ROUTE HIT");
+    console.log("ROUTE HIT");
     console.log(req.body);
+try{
+    // In order to secure the password first thing we need to do validate the data and then encrypt the password
+    // Validation od Data
+    validateSignupdata(req);
+    const {firstName,lastname,emailId,password} =req.body;
 
-
+    //Encrypt the password
+    const passwordHash = await bcrypt.hash(password,10);
+    console.log(passwordHash);
 
  //undefined will be the output bcz our server is not able to read json format data,so we need middleware to convert json into js object
-    //Creating a new instance of the User model
-    const user = new User(req.body);
+    
+ //Creating a new instance of the User model
+    const user = new User({
+        firstName,
+        lastname,
+        emailId,
+        password:passwordHash,
+    });
     await user.save();
         res.send("User Added succesfully");}
         catch(err){
@@ -24,6 +40,32 @@ try{console.log("ROUTE HIT");
                 error:err.message
             });
         }
+});
+
+app.post("/login",async(req,res) =>{
+try{ // first we get emailId and password from req.body
+    const{ emailId, password}= req.body;
+
+    //then we will check whether this emailId is present in db
+    const user = await User.findOne({ emailId: emailId});
+    // ii user is not in db ,throw an error
+    if(!user){
+        throw new Error("Invalid credentials");// dont throw email not present ,just invalid
+    }
+// if pressent then it checks valid password using comparinng in db , here passoword is taken from user and user.password is hashed password in db
+    const isPasswordValid = await bcrypt.compare(password,user.password);
+
+    if(isPasswordValid){
+        res.send("LOgin Successfull");
+    }
+    else{
+        throw new Error("Invalid credetials");//dont throw password incorrect, just invalid (no one sd know its right or wrong)
+    }
+
+
+}catch(err){
+        res.status(400).send("UPDATE FAIULED"+ err.message);
+    }
 });
 
 //patch api UPDATE THE DATA OF THE USER
