@@ -17,4 +17,14 @@ const validateSignupdata = (req) =>{
 
 
 };
-module.exports= {validateSignupdata};
+
+const validateEditProfileData = (req) => {
+    const allowedEditFields = ["firstName","lastname","emailId","gender","age","about","skills"
+
+    ];
+    const isEditAllowed = Object.keys(req.body).every((field)=>
+    allowedEditFields.includes(field));// it will return a boolean value , just pure javascript
+
+    return isEditAllowed;
+}
+module.exports= {validateSignupdata,validateEditProfileData};

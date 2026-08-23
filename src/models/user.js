@@ -69,6 +69,8 @@ const userSchema = new mongoose.Schema({
     timestamps:true,
 });
 
+userSchema.index({ firstName:1 ,lastname: 1});// compound indexing
+
 // reusable jwt token creation component
 userSchema.methods.getJWT = async function () {
     const user = this; //this means the user logged in
