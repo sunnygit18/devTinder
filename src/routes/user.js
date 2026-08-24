@@ -3,6 +3,7 @@ const userRouter = express.Router();
 
 const {userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 
 const USER_SAFE_DATA = "firstName lastname age gender about skills";
 
@@ -56,6 +57,53 @@ userRouter.get("/user/connections", userAuth, async(req,res)=> {
     });
 
     }
+});
+
+userRouter.get("/feed",userAuth,async(req,res)=>{
+try{
+// User should see all the user cards except
+//1.his own cards 2.his connections(already accepted) 3.ignored people 4.already sent the connection request
+// now go to connection requsest and find whosent the request/ who got the request and select only these two fields
+
+const loggedInUser = req.user;
+
+const page = parseInt(req.query.page) || 1;
+let limit = parseInt(req.query.limit) || 10;
+limit = limit > 50? 50 : limit;
+
+const skip = (page - 1) * limit;
+const connectionRequest = await ConnectionRequest.find({
+    $or: [{fromUserId:loggedInUser._id},{ toUserId: loggedInUser._id}],
+}).select("fromUserId toUserId");
+
+const hideUserFromFeed = new Set();// data structure is created to hold user needed to hide
+connectionRequest.forEach((req)=>{//  iterate connectionrequest(above created)..take fromid and to user & add to set as string cz its objId
+    hideUserFromFeed.add(req.fromUserId.toString());
+    hideUserFromFeed.add(req.toUserId.toString());
+});
+console.log(hideUserFromFeed);
+
+const users = await User.find({
+    $and: [
+        {_id:{ $nin: Array.from(hideUserFromFeed)}},
+        {_id: {$ne: loggedInUser._id}},
+    ],// give all user who are not present in thid hideuserfromfeed also ne(not equal to) my ID// here nin requires array
+}).select(USER_SAFE_DATA)
+.skip(skip)
+.limit(limit);
+
+res.send(users);
+
+
+
+
+
+
+
+
+}catch(err){
+    res.status(400).json({message: err.message});
+}
 });
 
 module.exports = userRouter;
