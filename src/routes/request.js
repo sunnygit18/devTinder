@@ -62,4 +62,34 @@ requestRouter.post("/request/send/:status/:toUserId",userAuth,async (req,res) =>
     res.send(user.firstName + "sent the connection Request");
 });
 
+requestRouter.post("/request/review/:status/:requestId",userAuth,async (req,res)=>{
+    try{
+        const loggedInUser = req.user;// here  the req.user is toUserId because toUserId has to login to accept/reject the requestid
+     const {status, requestId } = req.params;
+
+     const allowedStatus = ["accepted","rejected"]; // no gibberish status 
+     if (!allowedStatus.includes(status)){
+        return res.status(400).json({ message : "Status Not Allowed"});
+     }
+
+     // these things must be present in database
+     const connectionRequest = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInUser._id,
+        status: "interested"
+     });
+     if(!connectionRequest) {
+        return res.status(404).json({ message: "Connection request not found"});
+     }
+
+
+     connectionRequest.status =status;
+     const data = await connectionRequest.save();
+
+     res.json({ message: "Connection request " + status, data});
+
+    }catch(err){
+        res.status(400).send("ERROR: " + err.message);
+    }
+});
 module.exports = requestRouter;
