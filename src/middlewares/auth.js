@@ -8,7 +8,7 @@ try{
 
 // to see token ia actually present or not
     if(!token) {
-        throw new Error("Token is not valid");
+        return res.status(401).send("Please login");
     }
     //validate the token
     const decodeObj = await jwt.verify(token,"DEV@Tinder$798");// this decodeObj will given id 

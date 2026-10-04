@@ -60,7 +60,7 @@ try{
       //Add thr token to cookie and send the response back to user
       res.cookie("token", token);
 
-        res.send("LOgin Successfull");
+        res.send(user);
     }
     else{
         throw new Error("Invalid credetials");//dont throw password incorrect, just invalid (no one sd know its right or wrong)
