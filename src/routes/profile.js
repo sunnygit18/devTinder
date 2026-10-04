@@ -31,7 +31,8 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res)=>{
  res.send("Profile update is  SUCCESSFUL BROSKIE");
 
     }catch(err){
-        res.status(400).send("ERROR : " + err.message);
+        console.log("PROFILE EDIT ERROR:", err);
+    res.status(400).send("ERROR : " + err.message);
     }
 
 });

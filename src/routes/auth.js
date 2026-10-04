@@ -29,8 +29,13 @@ try{
         emailId,
         password:passwordHash,
     });
-    await user.save();
-        res.send("User Added succesfully");}
+    const savedUser = await user.save();
+    const token = await savedUser.getJWT(); // using helperb function in user.js ( jwt token is being created here)
+
+      //Add thr token to cookie and send the response back to user
+      res.cookie("token", token);
+
+        res.json({message: "User Added succesfully", data: savedUser});}
         catch(err){
             res.status(400).json({
                 error:err.message

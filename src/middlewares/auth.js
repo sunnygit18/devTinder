@@ -5,6 +5,8 @@ const userAuth = async (req, res,next) => {
 try{
     // Read the cookie from the token
     const {token } = req.cookies;
+    console.log("TOKEN FROM COOKIE:", token);
+    
 
 // to see token ia actually present or not
     if(!token) {

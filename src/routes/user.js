@@ -5,7 +5,7 @@ const {userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 
-const USER_SAFE_DATA = "firstName lastname age gender about skills";
+const USER_SAFE_DATA = "firstName lastname age gender about skills photoUrl";
 
 //Get all the pending connection request for the loggedIn user
 userRouter.get("/user/request/received",userAuth,async(req,res)=>{
@@ -44,7 +44,7 @@ userRouter.get("/user/connections", userAuth, async(req,res)=> {
         console.log(connectionRequest);
 
         const data = connectionRequest.map((row)=>{
-            if(row.fromUserId._id.toString()===loggedInUser.id.toString()){
+            if(row.fromUserId._id.toString()===loggedInUser._id.toString()){
                 return row.toUserId;
             }
             return row.fromUserId;
